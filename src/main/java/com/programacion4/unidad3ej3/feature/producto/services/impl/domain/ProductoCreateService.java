@@ -13,26 +13,44 @@ import com.programacion4.unidad3ej3.feature.producto.services.interfaces.commons
 
 import lombok.AllArgsConstructor;
 
-
 @Service
 @AllArgsConstructor
 public class ProductoCreateService implements IProductoCreateService {
 
     private final IProductoExistByNameService productoExistByNameService;
-
     private final IProductoRepository productoRepository;
 
     @Override
     public ProductoResponseDto create(ProductoCreateRequestDto dto) {
 
+        // 1. VALIDAR NOMBRE DUPLICADO
         if (productoExistByNameService.existByName(dto.getNombre())) {
             throw new BadRequestException("El nombre del producto ya existe");
         }
 
+        // 2. CAPITALIZE (REQUERIDO POR EL PDF)
+        dto.setNombre(capitalize(dto.getNombre()));
+        dto.setDescripcion(capitalize(dto.getDescripcion()));
+
+        // 3. MAPEAR A ENTIDAD
         Producto productoAGuardar = ProductoMapper.toEntity(dto);
-        
+
+        // 4. INICIALIZAR SOFT DELETE
+        productoAGuardar.setEstaEliminado(false);
+
+        // 5. GUARDAR EN BD
         Producto productoGuardado = productoRepository.save(productoAGuardar);
 
+        // 6. DEVOLVER RESPUESTA
         return ProductoMapper.toResponseDto(productoGuardado);
+    }
+
+    // MÉTODO PARA FORMATEAR TEXTO
+    private String capitalize(String texto) {
+        if (texto == null || texto.isEmpty()) {
+            return texto;
+        }
+        texto = texto.toLowerCase();
+        return texto.substring(0, 1).toUpperCase() + texto.substring(1);
     }
 }

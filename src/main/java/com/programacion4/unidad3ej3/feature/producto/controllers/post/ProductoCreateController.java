@@ -25,7 +25,7 @@ public class ProductoCreateController {
     @PostMapping
     public ResponseEntity<BaseResponse<ProductoResponseDto>> create(
         @Valid @RequestBody ProductoCreateRequestDto dto) {
-        return ResponseEntity.ok(
+        return ResponseEntity.status(201).body(
             BaseResponse.ok(
                 productoCreateService.create(dto), 
                 "Producto creado correctamente"
